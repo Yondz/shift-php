@@ -1,26 +1,32 @@
 <?php
 
-namespace ShiftWalletMonitor\Classes;
+namespace ShiftPHP\Classes;
 
 
 /**
  * Base client class to execute GET/POST/PUT requests on the API
+ * @author Yondz
+ * @package ShiftPHP
  */
 class Command {
 
-    protected $host = "https://wallet.shiftnrg.org";
+
     protected $route;
-    protected $params;
     protected $type;
+    protected $params;
     protected $data;
+
+    // Making some constants to make this code generic
+    const SUCCES_KEY = "success";
+    const ERROR_KEY  = "error";
 
     /**
      * ShiftClient constructor.
      * @param $command
      * @param $type
      */
-    public function __construct($command, $type){
-        $this->route = $this->host.$command;
+    public function __construct($host, $command, $type){
+        $this->route = $host.$command;
         $this->type = $type;
         $this->success = 0;
         $this->errors = [];
@@ -101,6 +107,44 @@ class Command {
     }
 
     /**
+     * Execute the command and returns the response as an array
+     * @return mixed
+     */
+    public function execute(){
+        
+        // Get cURL resource
+        $curl = curl_init($this->getRequestUri());
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $this->type);
+
+        // Adding POST/PUT parameters
+        if($this->isPOST() || $this->isPUT()){
+            $params = json_encode($this->params);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($params)));
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+        }
+
+        // Send the request & save response to $resp
+        $response = curl_exec($curl);
+        // Close request to clear up some resources
+        curl_close($curl);
+        
+        
+        $this->data = json_decode($response, true);
+
+        // If the success key does not exist, we'll consider the request as successful and it'll be up to the user to validate it.
+        if(isset($this->data[self::SUCCES_KEY])){
+            if(!$this->data[self::SUCCES_KEY]){
+                throw new CommandException($this->getError());
+            }
+        }
+
+        return $this->getData();
+    }
+
+
+    /**
      * Retrieve the command response
      * @return mixed
      */
@@ -115,34 +159,21 @@ class Command {
 
         return null;
     }
-    /**
-     * Execute the command and returns the response as an array
-     * @return mixed
-     */
-    public function execute(){
-        
-        // Get cURL resource
-        $curl = curl_init($this->getRequestUri());
 
-        if($this->isPOST()){
-            $params = json_encode($this->params);
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($params)));
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
-        } else if($this->isGET()){
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "GET");
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-            
-        }
-        // Send the request & save response to $resp
-        $response = curl_exec($curl);
-        // Close request to clear up some resources
-        curl_close($curl);
-        
-        
-        $this->data = json_decode($response, true);
-        return $this->data["success"];
+    /**
+     * Retrieve the error status(wrapper)
+     * @return mixed|null
+     */
+    public function getError(){
+        return $this->getData(self::ERROR_KEY);
+    }
+
+    /**
+     * Retrieve the success status (wrapper)
+     * @return mixed|null
+     */
+    public function getSuccess(){
+        return $this->getData(self::SUCCES_KEY);
     }
 
 }
