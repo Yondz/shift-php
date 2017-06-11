@@ -113,6 +113,17 @@ class ShiftAPI {
         $this->host =  $host;
     }
 
+    /**
+     * Converts a string amount with 8 digits on the right to a float value
+     * @param $amount
+     * @return mixed
+     */
+    public function convertAmountToFloat($amount){
+        $right = substr($amount, -8);
+        $left = str_replace($right, "",$amount);
+        return floatval($left.".".$right);
+    }
+
     // =====================================================================================================
     //  ACCOUNTS
     // =====================================================================================================
@@ -154,12 +165,7 @@ class ShiftAPI {
         $command->setParam("address", $address);
         $command->execute();
         $balance = $command->getData( $confirmed ? "balance" : "unconfirmedBalance");
-
-        // Converting to float
-        $right = substr($balance, -8);
-        $left = str_replace($right, "",$balance);
-        $balance = floatval($left.".".$right);
-        return $balance;
+        return $this->convertAmountToFloat($balance);
     }
 
     /**
@@ -404,11 +410,105 @@ class ShiftAPI {
         $command = new Command($this->host, self::PEERS_GET_VERSION,"GET");
         return $command->execute();
     }
-    
+
     // =====================================================================================================
     //  BLOCKS
     // =====================================================================================================
 
+    /**
+     * Gets block by provided id.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getBlock($id){
+        $command = new Command($this->host, self::BLOCKS_GET_ONE,"GET");
+        $command->setParam("id", $id);
+        $command->execute();
+        return $command->getData("block");
+    }
+
+    /**
+     * Gets all blocks by provided filter(s). (OR jointed)
+     * @param int $totalFee
+     * @param int $totalAmount
+     * @param string $previousBlock
+     * @param int $height
+     * @param string $generatorPublicKey
+     * @param int $limit
+     * @param int $offset
+     * @param string $orderBy
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getBlocks($totalFee = null, $totalAmount = null, $previousBlock = null, $height = null, $generatorPublicKey = null, $limit = null, $offset = null, $orderBy = null){
+
+        $command = new Command($this->host, self::BLOCKS_GET_FILTER,"GET");
+        $command->setParam("totalFee", $totalFee);
+        $command->setParam("totalAmount", $totalAmount);
+        $command->setParam("previousBlock", $previousBlock);
+        $command->setParam("height", $height);
+        $command->setParam("generatorPublicKey", $generatorPublicKey);
+        $command->setParam("limit", $limit);
+        $command->setParam("offset", $offset);
+        $command->setParam("orderBy", $orderBy);
+        $command->execute();
+        return $command->getData("blocks");
+    }
+
+    /**
+     * Get transaction fee for sending "normal" transactions.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getFee(){
+        $command = new Command($this->host, self::BLOCKS_GET_FEE,"GET");
+        $command->execute();
+        return $this->convertAmountToFloat($command->getData("fee"));
+    }
+
+    /**
+     * Get transaction fee for all types of transactions.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getFees(){
+        $command = new Command($this->host, self::BLOCKS_GET_FEES,"GET");
+        $command->execute();
+
+        // Converting all fees to float
+        $data = $command->getData("fees");
+        foreach($data as $key => $value){
+            $data[$key] = $this->convertAmountToFloat($value);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Gets the forging reward for blocks.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getReward(){
+        $command = new Command($this->host, self::BLOCKS_GET_REWARD,"GET");
+        $command->execute();
+        return $this->convertAmountToFloat($command->getData("reward"));
+    }
+
+    /**
+     * Gets the total amount of Shift in circulation
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getSupply(){
+        $command = new Command($this->host, self::BLOCKS_GET_SUPPLY,"GET");
+        $command->execute();
+        return $this->convertAmountToFloat($command->getData("supply"));
+    }
+    
+    
+    
     // =====================================================================================================
     //  SIGNATURES
     // =====================================================================================================
