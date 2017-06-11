@@ -40,7 +40,9 @@ class Command {
      * @param $value
      */
     public function setParam($key, $value){
-        $this->params[$key] = $value;
+        if(!is_null($value)){
+            $this->params[$key] = $value;
+        }
     }
 
     /**
