@@ -506,8 +506,57 @@ class ShiftAPI {
         $command->execute();
         return $this->convertAmountToFloat($command->getData("supply"));
     }
-    
-    
+
+    /**
+     * Gets the blockchain height of the client.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getHeight(){
+        $command = new Command($this->host, self::BLOCKS_GET_HEIGHT,"GET");
+        $command->execute();
+        return $command->getData("height");
+    }
+
+    /**
+     * Gets status of height, fee, milestone, blockreward and supply
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getStatus(){
+        $command = new Command($this->host, self::BLOCKS_GET_STATUS,"GET");
+        $command->execute();
+
+        return [
+            "height"    => $command->getData("height"),
+            "fee"       => $this->convertAmountToFloat($command->getData("fee")),
+            "milestone" => $command->getData("milestone"),
+            "reward"    => $this->convertAmountToFloat($command->getData("reward")),
+            "supply"    => $this->convertAmountToFloat($command->getData("supply"))
+        ];
+    }
+
+    /**
+     * Gets the nethash of the blockchain on a client.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getNethash(){
+        $command = new Command($this->host, self::BLOCKS_GET_NETHASH,"GET");
+        $command->execute();
+        return $command->getData("nethash");
+    }
+
+    /**
+     * Gets the milestone of the blockchain on a client.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getMilestone(){
+        $command = new Command($this->host, self::BLOCKS_GET_MILESTONE,"GET");
+        $command->execute();
+        return $command->getData("milestone");
+    }
     
     // =====================================================================================================
     //  SIGNATURES
