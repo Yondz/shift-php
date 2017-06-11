@@ -7,6 +7,8 @@ namespace ShiftPHP\Classes;
  * Base client class to execute GET/POST/PUT requests on the API
  * @author Yondz
  * @package ShiftPHP
+ * @link https://github.com/yondz/shift-php
+ * @license https://github.com/yondz/shift-php/blob/master/LICENSE
  */
 class Command {
 
