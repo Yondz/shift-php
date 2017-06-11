@@ -119,6 +119,7 @@ class Command {
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $this->type);
+        curl_setopt($curl,CURLOPT_FAILONERROR,true);
 
         // Adding POST/PUT parameters
         if($this->isPOST() || $this->isPUT()){
@@ -129,10 +130,17 @@ class Command {
 
         // Send the request & save response to $resp
         $response = curl_exec($curl);
+
+        // Curl error
+        if($errors = curl_error($curl)){
+            curl_close($curl);
+            throw new CommandException($errors);
+        }
+
         // Close request to clear up some resources
         curl_close($curl);
-        
-        
+
+
         $this->data = json_decode($response, true);
 
         // If the success key does not exist, we'll consider the request as successful and it'll be up to the user to validate it.
