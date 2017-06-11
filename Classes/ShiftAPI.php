@@ -7,6 +7,8 @@ namespace ShiftPHP\Classes;
  * Official API documentation : https://www.shiftnrg.org/api-documentation/
  * @author Yondz
  * @package ShiftPHP
+ * @link https://github.com/yondz/shift-php
+ * @license https://github.com/yondz/shift-php/blob/master/LICENSE
  */
 class ShiftAPI {
 

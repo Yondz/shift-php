@@ -6,6 +6,8 @@ namespace ShiftPHP;
  * Class Autoload
  * @package ShiftPHP
  * @author Yondz
+ * @link https://github.com/yondz/shift-php
+ * @license https://github.com/yondz/shift-php/blob/master/LICENSE
  */
 class Autoload{
 
