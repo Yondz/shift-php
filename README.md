@@ -20,6 +20,8 @@ $client = new ShiftAPI($host);
 echo "Total supply : " . $client->getSupply();
 ```
 
+Note: Every optionnal parameter can be set to null, and will not be sent to the request.
+
 ## Errors
 
 Every API command that returns the fields "success" and "error" can throw a CommandException that you can use to adapt your code.
