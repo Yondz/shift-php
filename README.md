@@ -1,6 +1,9 @@
 # ShiftPHP - PHP Wrapper for SHIFT API
 
 ShiftPHP is a set of PHP classes to call the SHIFT (https://www.shiftnrg.org) API from a PHP project.
+## Prerequisites
+
+You will need the curl PHP package installed (php7.1-curl for php7.1, php7.0-curl for php7.0 and php5-curl for php < 7)
 
 ## Usage
 
