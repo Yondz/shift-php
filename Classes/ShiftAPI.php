@@ -4,6 +4,7 @@ namespace ShiftPHP\Classes;
 
 /**
  * Shift API
+ * Official API documentation : https://www.shiftnrg.org/api-documentation/
  * @author Yondz
  * @package ShiftPHP
  */
@@ -211,9 +212,7 @@ class ShiftAPI {
     public function putDelegates($secret, array $upVote, array $downVote, $secondSecret = null){
         $command = new Command($this->host, self::ACCOUNTS_PUT_DELEGATES,"PUT");
         $command->setParam("secret", $secret);
-        if($secondSecret !== null){
-            $command->setParam("secondSecret", $secondSecret);
-        }
+        $command->setParam("secondSecret", $secondSecret);
 
         // Building vote array
         $delegates = [];
@@ -267,10 +266,145 @@ class ShiftAPI {
     //  TRANSACTIONS
     // =====================================================================================================
 
+    /**
+     * List of transactions matched by provided parameters.
+     * @param string $blockId
+     * @param string $senderId
+     * @param string $recipientId
+     * @param int $limit
+     * @param int $offset
+     * @param string $orderBy
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getTransactionsList($blockId = null, $senderId = null, $recipientId = null, $limit = null, $offset = null, $orderBy = null){
+
+        $command = new Command($this->host, self::TRANSACTIONS_LIST,"GET");
+        $command->setParam("blockId", $blockId);
+        $command->setParam("senderId", $senderId);
+        $command->setParam("recipientId", $recipientId);
+        $command->setParam("limit", $limit);
+        $command->setParam("offset", $offset);
+        $command->setParam("orderBy", $orderBy);
+        $command->execute();
+        return $command->getData("transactions");
+    }
+
+    /**
+     * @param string $secret
+     * @param float $amount
+     * @param string $recipientId
+     * @param string $publicKey
+     * @param string $secondSecret
+     * @return mixed
+     * @throws CommandException
+     */
+    public function sendTransaction($secret, $amount, $recipientId, $publicKey, $secondSecret){
+        $command = new Command($this->host, self::TRANSACTIONS_SEND,"POST");
+
+        // The amount is the float value * 10^8 casted to string
+        $amountString = strval($amount * 100000000);
+
+        $command->setParam("secret", $secret);
+        $command->setParam("amount", $amountString);
+        $command->setParam("recipientId", $recipientId);
+        $command->setParam("publicKey", $publicKey);
+        $command->setParam("secondSecret", $secondSecret);
+        $command->execute();
+        return $command->getData("transactionId");
+    }
+
+    /**
+     * Get transaction that matches the provided id.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getTransaction($id){
+        $command = new Command($this->host, self::TRANSACTIONS_GET,"GET");
+        $command->setParam("id", $id);
+        $command->execute();
+        return $command->getData("transaction");
+    }
+
+    /**
+     * Get unconfirmed transaction that matches the provided id.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getUnconfirmedTransaction($id){
+        $command = new Command($this->host, self::TRANSACTIONS_UNCONFIRMED_GET,"GET");
+        $command->setParam("id", $id);
+        $command->execute();
+        return $command->getData("transaction");
+    }
+
+    /**
+     * Gets a list of unconfirmed transactions.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getUnconfirmedTransactionsList(){
+        $command = new Command($this->host, self::TRANSACTIONS_UNCONFIRMED_LIST,"GET");
+        $command->execute();
+        return $command->getData("transactions");
+    }
+
     // =====================================================================================================
     //  PEERS
     // =====================================================================================================
 
+    /**
+     * Gets list of peers from provided filter parameters. (OR jointed)
+     * @param string $state
+     * @param string $os
+     * @param string $version
+     * @param int $limit
+     * @param int $offset
+     * @param string $orderBy
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getPeersList($state = null, $os = null, $version = null, $limit = null, $offset = null, $orderBy = null){
+
+        $command = new Command($this->host, self::PEERS_LIST,"GET");
+        $command->setParam("state", $state);
+        $command->setParam("os", $os);
+        $command->setParam("version", $version);
+        $command->setParam("limit", $limit);
+        $command->setParam("offset", $offset);
+        $command->setParam("orderBy", $orderBy);
+        $command->execute();
+        return $command->getData("peers");
+    }
+
+    /**
+     * Gets peer by IP address and port
+     * @param string $ip
+     * @param int $port
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getPeer($ip, $port){
+
+        $command = new Command($this->host, self::PEERS_GET,"GET");
+        $command->setParam("ip", $ip);
+        $command->setParam("port", $port);
+        $command->execute();
+        return $command->getData("peer");
+    }
+
+    /**
+     * Gets a list peer versions and build times
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getPeerVersion(){
+        $command = new Command($this->host, self::PEERS_GET_VERSION,"GET");
+        return $command->execute();
+    }
+    
     // =====================================================================================================
     //  BLOCKS
     // =====================================================================================================
