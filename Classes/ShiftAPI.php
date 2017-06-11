@@ -194,12 +194,12 @@ class ShiftAPI {
     }
 
     /**
-     * Returns delegate accounts by address.
+     * Returns delegate accounts voted by address.
      * @param string $address
      * @return mixed
      * @throws CommandException
      */
-    public function getDelegates($address){
+    public function getVotedDelegates($address){
         $command = new Command($this->host, self::ACCOUNTS_GET_DELEGATES,"GET");
         $command->setParam("address", $address);
         $command->execute();
@@ -557,14 +557,112 @@ class ShiftAPI {
         $command->execute();
         return $command->getData("milestone");
     }
-    
+
     // =====================================================================================================
     //  SIGNATURES
     // =====================================================================================================
 
+    /**
+     * Gets the second signature status of an account.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getSignatureStatus(){
+        $command = new Command($this->host, self::SIGNATURES_GET,"GET");
+        $command->execute();
+        return $command->getData("signature");
+    }
+
+    /**
+     * Add a second signature to an account.
+     * @param string $secret
+     * @param string $secondSecret
+     * @param string $publicKey
+     * @return mixed
+     * @throws CommandException
+     */
+    public function addSecondSignature($secret, $secondSecret, $publicKey){
+        $command = new Command($this->host, self::SIGNATURES_ADD_SECOND,"PUT");
+        $command->setParam("secret", $secret);
+        $command->setParam("secondSecret", $secondSecret);
+        $command->setParam("publicKey", $publicKey);
+        return $command->execute();
+    }
     // =====================================================================================================
     //  DELEGATES
     // =====================================================================================================
+
+    /**
+     * Puts request to create a delegate.
+     * @param string $secret
+     * @param string $secondSecret
+     * @param string $username
+     * @return mixed
+     * @throws CommandException
+     */
+    public function createDelegate($secret, $secondSecret, $username){
+        $command = new Command($this->host, self::DELEGATES_CREATE,"PUT");
+        $command->setParam("secret", $secret);
+        $command->setParam("secondSecret", $secondSecret);
+        $command->setParam("username", $username);
+        $command->execute();
+        return $command->getData("transaction");
+    }
+
+    /**
+     * Gets list of delegates by provided filter.
+     * @param int $limit
+     * @param int $offset
+     * @param string $orderBy
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getDelegatesList($limit = null, $offset = null, $orderBy = null){
+        $command = new Command($this->host, self::DELEGATES_LIST,"GET");
+        $command->setParam("limit", $limit);
+        $command->setParam("offset", $offset);
+        $command->setParam("orderBy", $orderBy);
+        $command->execute();
+        return $command->getData("delegates");
+    }
+
+    /**
+     * Gets delegate by username
+     * @param string $username
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getDelegateByUsername($username){
+        $command = new Command($this->host, self::DELEGATES_GET,"GET");
+        $command->setParam("username", $username);
+        $command->execute();
+        return $command->getData("delegate");
+    }
+
+    /**
+     * Gets delegate by public key
+     * @param string $publicKey
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getDelegateByPublicKey($publicKey){
+        $command = new Command($this->host, self::DELEGATES_GET,"GET");
+        $command->setParam("publicKey", $publicKey);
+        $command->execute();
+        return $command->getData("delegate");
+    }
+
+    /**
+     * Get total count of registered delegates
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getDelegatesCount(){
+        $command = new Command($this->host, self::DELEGATES_COUNT,"GET");
+        $command->execute();
+        return $command->getData("count");
+    }
 
     /**
      * Get voters of delegate.
@@ -577,6 +675,49 @@ class ShiftAPI {
         $command->setParam("publicKey", $publicKey);
         $command->execute();
         return $command->getData("accounts");
+    }
+
+    /**
+     * Enables forging for a delegate on the client node.
+     * @param string $secret
+     * @return mixed
+     * @throws CommandException
+     */
+    public function enableForging($secret){
+        $command = new Command($this->host, self::DELEGATES_ENABLE_FORGING,"POST");
+        $command->setParam("secret", $secret);
+        $command->execute();
+        return $command->getData("address");
+    }
+
+    /**
+     * Enables forging for a delegate on the client node.
+     * @param string $secret
+     * @return mixed
+     * @throws CommandException
+     */
+    public function disableForging($secret){
+        $command = new Command($this->host, self::DELEGATES_DISABLE_FORGING,"POST");
+        $command->setParam("secret", $secret);
+        $command->execute();
+        return $command->getData("address");
+    }
+
+    /**
+     * Get amount of Shift forged by an account.
+     * @param string $publicKey
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getForgedByAccount($publicKey){
+        $command = new Command($this->host, self::DELEGATES_GET_FORGED,"GET");
+        $command->setParam("generatorPublicKey", $publicKey);
+        $command->execute();
+        return [
+            "fees"      => $this->convertAmountToFloat($command->getData("fees")),
+            "rewards"   => $this->convertAmountToFloat($command->getData("rewards")),
+            "forged"    => $this->convertAmountToFloat($command->getData("forged")),
+        ];
     }
 
     // =====================================================================================================
