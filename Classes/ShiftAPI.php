@@ -724,8 +724,277 @@ class ShiftAPI {
     //  APPS
     // =====================================================================================================
 
+    /**
+     * Registers a Blockchain Application.
+     * @param string $secret
+     * @param string $secondSecret
+     * @param string $publicKey
+     * @param string $category
+     * @param string $name
+     * @param string $description
+     * @param string $tags
+     * @param string $type
+     * @param string $link
+     * @param string $icon
+     * @return mixed
+     * @throws CommandException
+     */
+    public function registerApp($secret, $secondSecret, $publicKey, $category, $name, $description, $tags, $type, $link, $icon){
+
+        $command = new Command($this->host, self::APPS_REGISTER, "PUT");
+        $command->setParam("secret", $secret);
+        $command->setParam("secondSecret", $secondSecret);
+        $command->setParam("publicKey", $publicKey);
+        $command->setParam("category", $category);
+        $command->setParam("name", $name);
+        $command->setParam("description", $description);
+        $command->setParam("tags", $tags);
+        $command->setParam("type", $type);
+        $command->setParam("link", $link);
+        $command->setParam("icon", $icon);
+        $command->execute();
+        return $command->getData("transactionId");
+    }
+
+    /**
+     * Gets a list of Blockchain Applications registered on the network.
+     * @param int $category
+     * @param string $name
+     * @param int $type
+     * @param string $link
+     * @param int $limit
+     * @param int $offset
+     * @param string $orderBy
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getApps($category = null, $name = null, $type = null, $link = null, $limit = null, $offset = null, $orderBy = null){
+        $command = new Command($this->host, self::APPS_GET_REGISTERED,"GET");
+        $command->setParam("category", $category);
+        $command->setParam("name", $name);
+        $command->setParam("type", $type);
+        $command->setParam("link", $link);
+        $command->setParam("limit", $limit);
+        $command->setParam("offset", $offset);
+        $command->setParam("orderBy", $orderBy);
+        $command->execute();
+        return $command->getData("dapps");
+    }
+
+    /**
+     * Gets a specific Blockchain Application by registered id.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getApp($id){
+        $command = new Command($this->host, self::APPS_GET,"GET");
+        $command->setParam("id", $id);
+        $command->execute();
+        return $command->getData("dapp");
+    }
+
+    /**
+     * Searches for Blockchain Applications by filter(s) on a node.
+     * @param string $q
+     * @param int $category
+     * @param int $installed
+     * @return mixed
+     * @throws CommandException
+     */
+    public function searchApps($q, $category, $installed){
+        $command = new Command($this->host, self::APPS_SEARCH,"GET");
+        $command->setParam("q", $q);
+        $command->setParam("category", $category);
+        $command->setParam("installed", $installed);
+        $command->execute();
+        return $command->getData("dapps");
+    }
+
+    /**
+     * Installs an app by id on the node.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function installApp($id){
+        $command = new Command($this->host, self::APPS_INSTALL,"POST");
+        $command->setParam("id", $id);
+        $command->execute();
+        return $command->getData("path");
+    }
+
+    /**
+     * Returns a list of installed apps on the requested node.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getInstalledApps(){
+        $command = new Command($this->host, self::APPS_INSTALLED,"GET");
+        $command->execute();
+        return $command->getData("dapps");
+    }
+
+    /**
+     * Returns a list of installed app ids on the requested node.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getInstalledAppsIds(){
+        $command = new Command($this->host, self::APPS_INSTALLED_IDS,"GET");
+        $command->execute();
+        return $command->getData("ids");
+    }
+
+    /**
+     * Uninstalls an app by id on the node.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function uninstallApp($id){
+        $command = new Command($this->host, self::APPS_UNINSTALL,"POST");
+        $command->setParam("id", $id);
+        $command->execute();
+        return true;
+    }
+
+    /**
+     * Launches an app by id on the requested node.
+     * @param string $id
+     * @param array $params
+     * @return mixed
+     * @throws CommandException
+     */
+    public function launchApp($id, $params = null){
+        $command = new Command($this->host, self::APPS_LAUNCH,"POST");
+        $command->setParam("id", $id);
+        $command->setParam("params", $params);
+        $command->execute();
+        return true;
+    }
+
+    /**
+     * Stops an app by id on the requested node.
+     * @param string $id
+     * @return mixed
+     * @throws CommandException
+     */
+    public function stopApp($id){
+        $command = new Command($this->host, self::APPS_STOP,"POST");
+        $command->setParam("id", $id);
+        $command->execute();
+        return true;
+    }
+
+    /**
+     * Returns a list of app ids currently being installed on the requested node.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getInstallingApps(){
+        $command = new Command($this->host, self::APPS_INSTALLING,"GET");
+        $command->execute();
+        return $command->getData("installing");
+    }
+
+    /**
+     * Returns a list of app ids currently being uninstalled on the client node.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getUninstallingApps(){
+        $command = new Command($this->host, self::APPS_UNINSTALLING,"GET");
+        $command->execute();
+        return $command->getData("uninstalling");
+    }
+
+    /**
+     * Returns a list of app ids which are currently launched on the client node.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getLaunchedApps(){
+        $command = new Command($this->host, self::APPS_LAUNCHED,"GET");
+        $command->execute();
+        return $command->getData("launched");
+    }
+
+    /**
+     * Returns a full list of app categories.
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getCategories(){
+        $command = new Command($this->host, self::APPS_CATEGORIES,"GET");
+        $command->execute();
+        return $command->getData("category");
+    }
+
     // =====================================================================================================
     //  MULTI-SIGNATURE
     // =====================================================================================================
 
+    /**
+     * Returns a list of multi-signature transactions that waiting for signature by publicKey.
+     * @param string $publicKey
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getPendingMultiSignatureTransactions($publicKey){
+        $command = new Command($this->host, self::MULTI_SIGNATURE_PENDING,"GET");
+        $command->setParam("publicKey", $publicKey);
+        $command->execute();
+        return $command->getData("transactions");
+    }
+
+    /**
+     * Create a multi-signature account.
+     * @param string $secret
+     * @param int $lifetime
+     * @param int $min
+     * @param array $keysgroup
+     * @return mixed
+     * @throws CommandException
+     */
+    public function createMultiSignatureAccount($secret, $lifetime, $min, $keysgroup){
+        $command = new Command($this->host, self::MULTI_SIGNATURE_CREATE_ACCOUNT,"PUT");
+        $command->setParam("secret", $secret);
+        $command->setParam("lifetime", $lifetime);
+        $command->setParam("min", $min);
+        $command->setParam("keysgroup", $keysgroup);
+        $command->execute();
+        return $command->getData("transactionId");
+
+    }
+
+    /**
+     * Signs a transaction that is awaiting signature.
+     * @param string $secret
+     * @param string $publicKey
+     * @param string $transactionId
+     * @return mixed
+     * @throws CommandException
+     */
+    public function signTransaction($secret, $publicKey, $transactionId){
+        $command = new Command($this->host, self::MULTI_SIGNATURE_SIGN,"POST");
+        $command->setParam("secret", $secret);
+        $command->setParam("publicKey", $publicKey);
+        $command->setParam("transactionId", $transactionId);
+        $command->execute();
+        return $command->getData("transactionId");
+    }
+
+    /**
+     * Gets a list of accounts that are part of a multi-signature account.
+     * @param string $publicKey
+     * @return mixed
+     * @throws CommandException
+     */
+    public function getMultiSignatureAccounts($publicKey){
+        $command = new Command($this->host, self::MULTI_SIGNATURE_ACCOUNTS,"GET");
+        $command->setParam("publicKey", $publicKey);
+        $command->execute();
+        return $command->getData("accounts");
+    }
 }
