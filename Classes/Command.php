@@ -147,7 +147,7 @@ class Command {
         $cacheFile = $this->generateKey();
 
         // Command caching
-        if($this->isGET() && file_exists($cacheFile) && filemtime($cacheFile) > (time() - $this->lifetime)) {
+        if($this->isGET() && $this->cache === true && file_exists($cacheFile) && filemtime($cacheFile) > (time() - $this->lifetime)) {
             $response = file_get_contents($cacheFile);
         } else {
 
