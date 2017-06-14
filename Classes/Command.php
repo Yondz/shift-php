@@ -172,7 +172,7 @@ class Command {
             if($this->isGET()){
                 if (!is_dir($this->cacheFolder)) {
                     // dir doesn't exist, make it
-                    mkdir($this->cacheFolder);
+                    mkdir($this->cacheFolder, 0775, true);
                 }
                 file_put_contents($cacheFile, $response);
             }
