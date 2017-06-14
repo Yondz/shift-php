@@ -5,6 +5,7 @@ namespace ShiftPHP\Classes;
 
 /**
  * Base client class to execute GET/POST/PUT requests on the API
+ * Default cache will be set in the /cache folder with a lifetime of 5 mins
  * @author Yondz
  * @package ShiftPHP
  * @link https://github.com/yondz/shift-php
@@ -18,22 +19,41 @@ class Command {
     protected $params;
     protected $data;
 
+    // Cache configuration
+    protected $cache;
+    protected $lifetime;
+    protected $cacheFolder;
+
     // Making some constants to make this code generic
     const SUCCES_KEY = "success";
     const ERROR_KEY  = "error";
 
     /**
-     * ShiftClient constructor.
-     * @param $command
-     * @param $type
+     * Command constructor.
+     * @param string $host
+     * @param string $command
+     * @param string $type
+     * @param boolean $cache
+     * @param integer $lifetime
      */
-    public function __construct($host, $command, $type){
+    public function __construct($host, $command, $type, $cache = false, $lifetime = 0, $cacheFolder = null){
         $this->route = $host.$command;
         $this->type = $type;
         $this->success = 0;
         $this->errors = [];
         $this->data = [];
         $this->params = [];
+        $this->cache = $cache;
+        $this->lifetime = $lifetime;
+        $this->cacheFolder = $cacheFolder;
+    }
+
+    /**
+     * Add $path at the end of the current route
+     * @param $path
+     */
+    public function addRoutePath($path){
+        $this->route .= $path;
     }
 
     /**
@@ -111,36 +131,61 @@ class Command {
     }
 
     /**
+     * Generate a MD5 hash based on the host route and the params, to get a cache key
+     * @param $data
+     * @return mixed
+     */
+    public function generateKey(){
+        return $this->cacheFolder . "/" . md5($this->route . json_encode($this->params));
+    }
+    /**
      * Execute the command and returns the response as an array
      * @return mixed
      */
     public function execute(){
-        
-        // Get cURL resource
-        $curl = curl_init($this->getRequestUri());
 
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $this->type);
-        curl_setopt($curl,CURLOPT_FAILONERROR,true);
+        $cacheFile = $this->generateKey();
 
-        // Adding POST/PUT parameters
-        if($this->isPOST() || $this->isPUT()){
-            $params = json_encode($this->params);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($params)));
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
-        }
+        // Command caching
+        if($this->isGET() && file_exists($cacheFile) && filemtime($cacheFile) > (time() - $this->lifetime)) {
+            $response = file_get_contents($cacheFile);
+        } else {
 
-        // Send the request & save response to $resp
-        $response = curl_exec($curl);
+            // Get cURL resource
+            $curl = curl_init($this->getRequestUri());
 
-        // Curl error
-        if($errors = curl_error($curl)){
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $this->type);
+            curl_setopt($curl,CURLOPT_FAILONERROR,true);
+
+            // Adding POST/PUT parameters
+            if($this->isPOST() || $this->isPUT()){
+                $params = json_encode($this->params);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($params)));
+                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+            }
+
+            // Send the request & save response to $resp
+            $response = curl_exec($curl);
+
+            // Caching if it is a GET request
+            if($this->isGET()){
+                if (!is_dir($this->cacheFolder)) {
+                    // dir doesn't exist, make it
+                    mkdir($this->cacheFolder);
+                }
+                file_put_contents($cacheFile, $response);
+            }
+
+            // Curl error
+            if($errors = curl_error($curl)){
+                curl_close($curl);
+                throw new CommandException($errors);
+            }
+
+            // Close request to clear up some resources
             curl_close($curl);
-            throw new CommandException($errors);
         }
-
-        // Close request to clear up some resources
-        curl_close($curl);
 
 
         $this->data = json_decode($response, true);
