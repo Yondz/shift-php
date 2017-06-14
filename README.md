@@ -36,6 +36,22 @@ try {
 }
 ```
 
+## Caching
+
+To avoid overloading your API endpoints, I've added a simple text cache for every GET command. It will produce a file inside a cache directory containing the response from the server, with a default lifetime of 300s (5 mins), this can be adjusted when instanciating the clients
+
+To enable the Cache system, you will have to use methods enableCache() / disableCache()
+```php
+$host = "http://localhost";
+$client = new ShiftAPI($host);
+$client->enableCache(); // Cache enabled with default lifetime (300s)
+$client->setLifetime(60); // Cache lifetime changed to 60s
+$client->setCacheFolder("cache/shift"); //Changed cache folder for this client
+echo "Total supply : " . $client->getSupply();
+```
+
+Note: There is no cache clear at the moment, only obsolete file are regenerated if necessary.
+
 ## Test
 
 I did not have time to test every API commands, feel free to open issues / pull request :)
