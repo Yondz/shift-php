@@ -10,13 +10,8 @@ namespace ShiftPHP\Classes;
  * @link https://github.com/yondz/shift-php
  * @license https://github.com/yondz/shift-php/blob/master/LICENSE
  */
-class ShiftAPI {
+class ShiftAPI extends AbstractAPI {
 
-    /**
-     * API host
-     * @var string $host
-     */
-    protected $host;
 
     /**
      * API Commands constants
@@ -109,13 +104,6 @@ class ShiftAPI {
     const MULTI_SIGNATURE_ACCOUNTS          = self::MULTI_SIGNATURE . "/accounts";
 
     /**
-     * ShiftAPI constructor
-     */
-    public function __construct($host){
-        $this->host =  $host;
-    }
-
-    /**
      * Converts a string amount with 8 digits on the right to a float value
      * @param $amount
      * @return mixed
@@ -137,7 +125,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getAccount($address){
-        $command = new Command($this->host, self::ACCOUNTS,"GET");
+        $command = new Command($this->host, self::ACCOUNTS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("address", $address);
         return $command->execute();
     }
@@ -163,7 +151,7 @@ class ShiftAPI {
      */
     public function getBalance($address, $confirmed = true){
 
-        $command = new Command($this->host, self::ACCOUNTS_GET_BALANCE, "GET");
+        $command = new Command($this->host, self::ACCOUNTS_GET_BALANCE, "GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("address", $address);
         $command->execute();
         $balance = $command->getData( $confirmed ? "balance" : "unconfirmedBalance");
@@ -177,7 +165,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getPublicKey($address){
-        $command = new Command($this->host, self::ACCOUNTS_GET_PUBLICKEY,"GET");
+        $command = new Command($this->host, self::ACCOUNTS_GET_PUBLICKEY,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("address", $address);
         $command->execute();
         return $command->getData("publicKey");
@@ -202,7 +190,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getVotedDelegates($address){
-        $command = new Command($this->host, self::ACCOUNTS_GET_DELEGATES,"GET");
+        $command = new Command($this->host, self::ACCOUNTS_GET_DELEGATES,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("address", $address);
         $command->execute();
         return $command->getData("delegates");
@@ -256,7 +244,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getLoadingStatus(){
-        $command = new Command($this->host, self::LOADER_GET_STATUS,"GET");
+        $command = new Command($this->host, self::LOADER_GET_STATUS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         return $command->execute();
     }
 
@@ -266,7 +254,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getSyncStatus(){
-        $command = new Command($this->host, self::LOADER_GET_SYNC,"GET");
+        $command = new Command($this->host, self::LOADER_GET_SYNC,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         return $command->execute();
     }
 
@@ -287,7 +275,7 @@ class ShiftAPI {
      */
     public function getTransactionsList($blockId = null, $senderId = null, $recipientId = null, $limit = null, $offset = null, $orderBy = null){
 
-        $command = new Command($this->host, self::TRANSACTIONS_LIST,"GET");
+        $command = new Command($this->host, self::TRANSACTIONS_LIST,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("blockId", $blockId);
         $command->setParam("senderId", $senderId);
         $command->setParam("recipientId", $recipientId);
@@ -329,7 +317,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getTransaction($id){
-        $command = new Command($this->host, self::TRANSACTIONS_GET,"GET");
+        $command = new Command($this->host, self::TRANSACTIONS_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("id", $id);
         $command->execute();
         return $command->getData("transaction");
@@ -342,7 +330,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getUnconfirmedTransaction($id){
-        $command = new Command($this->host, self::TRANSACTIONS_UNCONFIRMED_GET,"GET");
+        $command = new Command($this->host, self::TRANSACTIONS_UNCONFIRMED_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("id", $id);
         $command->execute();
         return $command->getData("transaction");
@@ -354,7 +342,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getUnconfirmedTransactionsList(){
-        $command = new Command($this->host, self::TRANSACTIONS_UNCONFIRMED_LIST,"GET");
+        $command = new Command($this->host, self::TRANSACTIONS_UNCONFIRMED_LIST,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("transactions");
     }
@@ -376,7 +364,7 @@ class ShiftAPI {
      */
     public function getPeersList($state = null, $os = null, $version = null, $limit = null, $offset = null, $orderBy = null){
 
-        $command = new Command($this->host, self::PEERS_LIST,"GET");
+        $command = new Command($this->host, self::PEERS_LIST,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("state", $state);
         $command->setParam("os", $os);
         $command->setParam("version", $version);
@@ -396,7 +384,7 @@ class ShiftAPI {
      */
     public function getPeer($ip, $port){
 
-        $command = new Command($this->host, self::PEERS_GET,"GET");
+        $command = new Command($this->host, self::PEERS_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("ip", $ip);
         $command->setParam("port", $port);
         $command->execute();
@@ -409,7 +397,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getPeerVersion(){
-        $command = new Command($this->host, self::PEERS_GET_VERSION,"GET");
+        $command = new Command($this->host, self::PEERS_GET_VERSION,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         return $command->execute();
     }
 
@@ -424,7 +412,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getBlock($id){
-        $command = new Command($this->host, self::BLOCKS_GET_ONE,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_ONE,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("id", $id);
         $command->execute();
         return $command->getData("block");
@@ -445,7 +433,7 @@ class ShiftAPI {
      */
     public function getBlocks($totalFee = null, $totalAmount = null, $previousBlock = null, $height = null, $generatorPublicKey = null, $limit = null, $offset = null, $orderBy = null){
 
-        $command = new Command($this->host, self::BLOCKS_GET_FILTER,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_FILTER,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("totalFee", $totalFee);
         $command->setParam("totalAmount", $totalAmount);
         $command->setParam("previousBlock", $previousBlock);
@@ -464,7 +452,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getFee(){
-        $command = new Command($this->host, self::BLOCKS_GET_FEE,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_FEE,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $this->convertAmountToFloat($command->getData("fee"));
     }
@@ -475,7 +463,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getFees(){
-        $command = new Command($this->host, self::BLOCKS_GET_FEES,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_FEES,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
 
         // Converting all fees to float
@@ -493,7 +481,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getReward(){
-        $command = new Command($this->host, self::BLOCKS_GET_REWARD,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_REWARD,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $this->convertAmountToFloat($command->getData("reward"));
     }
@@ -504,7 +492,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getSupply(){
-        $command = new Command($this->host, self::BLOCKS_GET_SUPPLY,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_SUPPLY,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $this->convertAmountToFloat($command->getData("supply"));
     }
@@ -515,7 +503,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getHeight(){
-        $command = new Command($this->host, self::BLOCKS_GET_HEIGHT,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_HEIGHT,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("height");
     }
@@ -526,7 +514,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getStatus(){
-        $command = new Command($this->host, self::BLOCKS_GET_STATUS,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_STATUS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
 
         return [
@@ -544,7 +532,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getNethash(){
-        $command = new Command($this->host, self::BLOCKS_GET_NETHASH,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_NETHASH,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("nethash");
     }
@@ -555,7 +543,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getMilestone(){
-        $command = new Command($this->host, self::BLOCKS_GET_MILESTONE,"GET");
+        $command = new Command($this->host, self::BLOCKS_GET_MILESTONE,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("milestone");
     }
@@ -571,7 +559,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getSignatureStatus(){
-        $command = new Command($this->host, self::SIGNATURES_GET,"GET");
+        $command = new Command($this->host, self::SIGNATURES_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("signature");
     }
@@ -621,7 +609,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getDelegatesList($limit = null, $offset = null, $orderBy = null){
-        $command = new Command($this->host, self::DELEGATES_LIST,"GET");
+        $command = new Command($this->host, self::DELEGATES_LIST,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("limit", $limit);
         $command->setParam("offset", $offset);
         $command->setParam("orderBy", $orderBy);
@@ -636,7 +624,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getDelegateByUsername($username){
-        $command = new Command($this->host, self::DELEGATES_GET,"GET");
+        $command = new Command($this->host, self::DELEGATES_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("username", $username);
         $command->execute();
         return $command->getData("delegate");
@@ -649,7 +637,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getDelegateByPublicKey($publicKey){
-        $command = new Command($this->host, self::DELEGATES_GET,"GET");
+        $command = new Command($this->host, self::DELEGATES_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("publicKey", $publicKey);
         $command->execute();
         return $command->getData("delegate");
@@ -661,7 +649,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getDelegatesCount(){
-        $command = new Command($this->host, self::DELEGATES_COUNT,"GET");
+        $command = new Command($this->host, self::DELEGATES_COUNT,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("count");
     }
@@ -673,7 +661,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getVoters($publicKey){
-        $command = new Command($this->host, self::DELEGATES_GET_VOTERS,"GET");
+        $command = new Command($this->host, self::DELEGATES_GET_VOTERS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("publicKey", $publicKey);
         $command->execute();
         return $command->getData("accounts");
@@ -712,7 +700,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getForgedByAccount($publicKey){
-        $command = new Command($this->host, self::DELEGATES_GET_FORGED,"GET");
+        $command = new Command($this->host, self::DELEGATES_GET_FORGED,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("generatorPublicKey", $publicKey);
         $command->execute();
         return [
@@ -771,7 +759,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getApps($category = null, $name = null, $type = null, $link = null, $limit = null, $offset = null, $orderBy = null){
-        $command = new Command($this->host, self::APPS_GET_REGISTERED,"GET");
+        $command = new Command($this->host, self::APPS_GET_REGISTERED,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("category", $category);
         $command->setParam("name", $name);
         $command->setParam("type", $type);
@@ -790,7 +778,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getApp($id){
-        $command = new Command($this->host, self::APPS_GET,"GET");
+        $command = new Command($this->host, self::APPS_GET,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("id", $id);
         $command->execute();
         return $command->getData("dapp");
@@ -805,7 +793,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function searchApps($q, $category, $installed){
-        $command = new Command($this->host, self::APPS_SEARCH,"GET");
+        $command = new Command($this->host, self::APPS_SEARCH,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("q", $q);
         $command->setParam("category", $category);
         $command->setParam("installed", $installed);
@@ -832,7 +820,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getInstalledApps(){
-        $command = new Command($this->host, self::APPS_INSTALLED,"GET");
+        $command = new Command($this->host, self::APPS_INSTALLED,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("dapps");
     }
@@ -843,7 +831,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getInstalledAppsIds(){
-        $command = new Command($this->host, self::APPS_INSTALLED_IDS,"GET");
+        $command = new Command($this->host, self::APPS_INSTALLED_IDS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("ids");
     }
@@ -895,7 +883,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getInstallingApps(){
-        $command = new Command($this->host, self::APPS_INSTALLING,"GET");
+        $command = new Command($this->host, self::APPS_INSTALLING,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("installing");
     }
@@ -906,7 +894,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getUninstallingApps(){
-        $command = new Command($this->host, self::APPS_UNINSTALLING,"GET");
+        $command = new Command($this->host, self::APPS_UNINSTALLING,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("uninstalling");
     }
@@ -917,7 +905,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getLaunchedApps(){
-        $command = new Command($this->host, self::APPS_LAUNCHED,"GET");
+        $command = new Command($this->host, self::APPS_LAUNCHED,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("launched");
     }
@@ -928,7 +916,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getCategories(){
-        $command = new Command($this->host, self::APPS_CATEGORIES,"GET");
+        $command = new Command($this->host, self::APPS_CATEGORIES,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->execute();
         return $command->getData("category");
     }
@@ -944,7 +932,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getPendingMultiSignatureTransactions($publicKey){
-        $command = new Command($this->host, self::MULTI_SIGNATURE_PENDING,"GET");
+        $command = new Command($this->host, self::MULTI_SIGNATURE_PENDING,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("publicKey", $publicKey);
         $command->execute();
         return $command->getData("transactions");
@@ -994,7 +982,7 @@ class ShiftAPI {
      * @throws CommandException
      */
     public function getMultiSignatureAccounts($publicKey){
-        $command = new Command($this->host, self::MULTI_SIGNATURE_ACCOUNTS,"GET");
+        $command = new Command($this->host, self::MULTI_SIGNATURE_ACCOUNTS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("publicKey", $publicKey);
         $command->execute();
         return $command->getData("accounts");
