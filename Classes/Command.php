@@ -173,7 +173,7 @@ class Command {
             $response = curl_exec($curl);
 
             // Caching if it is a GET request
-            if($this->isGET()){
+            if($this->isGET() && $this->cache === true){
                 if (!is_dir($this->cacheFolder)) {
                     // dir doesn't exist, make it
                     mkdir($this->cacheFolder, 0775, true);
