@@ -161,8 +161,8 @@ class Command {
             // Adding POST/PUT parameters
             if($this->isPOST() || $this->isPUT()){
                 $params = json_encode($this->params);
-                curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($params)));
-                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+                curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
             }
 
             // Send the request & save response to $resp
