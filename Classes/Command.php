@@ -161,15 +161,19 @@ class Command {
             // Adding POST/PUT parameters
             if($this->isPOST() || $this->isPUT()){
                 $params = json_encode($this->params);
-                curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($params)));
-                curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+                if ($this->isPOST()) {
+                    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                } else {
+                    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($params)));
+                }
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
             }
 
             // Send the request & save response to $resp
             $response = curl_exec($curl);
 
             // Caching if it is a GET request
-            if($this->isGET()){
+            if($this->isGET() && $this->cache === true){
                 if (!is_dir($this->cacheFolder)) {
                     // dir doesn't exist, make it
                     mkdir($this->cacheFolder, 0775, true);

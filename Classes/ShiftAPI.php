@@ -78,6 +78,7 @@ class ShiftAPI extends AbstractAPI {
     const DELEGATES_ENABLE_FORGING          = self::DELEGATES . "/forging/enable";
     const DELEGATES_DISABLE_FORGING         = self::DELEGATES . "/forging/disable";
     const DELEGATES_GET_FORGED              = self::DELEGATES . "/forging/getForgedByAccount";
+    const DELEGATES_GET_NEXT_FORGERS        = self::DELEGATES . "/getNextForgers";
 
     // Apps
     const APPS                              = self::START . "/dapps";
@@ -296,7 +297,7 @@ class ShiftAPI extends AbstractAPI {
      * @throws CommandException
      */
     public function sendTransaction($secret, $amount, $recipientId, $publicKey, $secondSecret){
-        $command = new Command($this->host, self::TRANSACTIONS_SEND,"POST");
+        $command = new Command($this->host, self::TRANSACTIONS_SEND,"PUT");
 
         // The amount is the float value * 10^8 casted to string
         $amountString = strval($amount * 100000000);
@@ -696,18 +697,34 @@ class ShiftAPI extends AbstractAPI {
     /**
      * Get amount of Shift forged by an account.
      * @param string $publicKey
+     * @param string $start
+     * @param string end
      * @return mixed
      * @throws CommandException
      */
-    public function getForgedByAccount($publicKey){
+    public function getForgedByAccount($publicKey, $start = null, $end = null){
         $command = new Command($this->host, self::DELEGATES_GET_FORGED,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
         $command->setParam("generatorPublicKey", $publicKey);
+        $command->setParam("start", $start);
+        $command->setParam("end", $end);
         $command->execute();
         return [
             "fees"      => $this->convertAmountToFloat($command->getData("fees")),
             "rewards"   => $this->convertAmountToFloat($command->getData("rewards")),
             "forged"    => $this->convertAmountToFloat($command->getData("forged")),
         ];
+    }
+
+    /**
+     * Get next delegate lining up to forge.
+     * @param int $limit
+     * @return mixed
+     */
+    public function getNextForgers($limit = 10){
+
+        $command = new Command($this->host, self::DELEGATES_GET_NEXT_FORGERS,"GET", $this->enableCache, $this->cacheLifetime, $this->cacheFolder);
+        $command->setParam("limit", $limit);
+        return $command->execute();
     }
 
     // =====================================================================================================
