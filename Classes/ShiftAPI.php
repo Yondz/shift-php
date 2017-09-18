@@ -47,7 +47,7 @@ class ShiftAPI extends AbstractAPI {
     const PEERS                             = self::START . "/peers";
     const PEERS_LIST                        = self::PEERS;
     const PEERS_GET                         = self::PEERS . "/get";
-    const PEERS_GET_VERSION                 = self::PEERS . "/get/version";
+    const PEERS_GET_VERSION                 = self::PEERS . "/version";
 
     // Blocks
     const BLOCKS                            = self::START . "/blocks";
